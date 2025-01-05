@@ -115,10 +115,16 @@ class TaskButton extends PanelMenu.Button {
     }
 
     _onHover() {
-        if (this.get_hover())
+        if (this.get_hover()) {
             this._window?.raise();
-        else
-            global.display.get_focus_window()?.raise();
+            this._box.set_opacity(255);
+        } else {
+            let focusWindow = global.display.get_focus_window();
+
+            focusWindow?.raise();
+            if (this._window != focusWindow)
+                this._box.set_opacity(UNFOCUSED_OPACITY);
+        }
     }
 
     _updateFocus() {
