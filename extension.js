@@ -70,7 +70,7 @@ class TaskButton extends PanelMenu.Button {
     }
 
     _makeButtonBox() {
-        this._box = new St.BoxLayout({style_class: 'panel-button'});
+        this._box = new St.BoxLayout();
 
         this._icon = new St.Icon();
         this._icon.set_icon_size(Main.panel.height / 2);
@@ -117,13 +117,8 @@ class TaskButton extends PanelMenu.Button {
     _onHover() {
         if (this.get_hover()) {
             this._window?.raise();
-            this._box.set_opacity(255);
         } else {
-            let focusWindow = global.display.get_focus_window();
-
-            focusWindow?.raise();
-            if (this._window != focusWindow)
-                this._box.set_opacity(UNFOCUSED_OPACITY);
+            global.display.get_focus_window()?.raise();
         }
     }
 
