@@ -115,11 +115,13 @@ class TaskButton extends PanelMenu.Button {
     }
 
     _onHover() {
-        if (this.get_hover()) {
+        if (!Main.wm._canScroll)
+            return;
+
+        if (this.get_hover())
             this._window?.raise();
-        } else {
+        else
             global.display.get_focus_window()?.raise();
-        }
     }
 
     _updateFocus() {
@@ -151,7 +153,6 @@ class TaskButton extends PanelMenu.Button {
 
     _destroy() {
         this._disconnectSignals();
-
         this.destroy();
     }
 });
