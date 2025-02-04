@@ -118,10 +118,10 @@ class TaskButton extends PanelMenu.Button {
         if (!Main.wm._canScroll)
             return;
 
-        if (this.get_hover())
+        if (this.get_hover() && !this._window?.on_all_workspaces)
             this._window?.raise();
         else
-            global.display.get_focus_window()?.raise();
+            global.display.focus_window?.raise();
     }
 
     _updateFocus() {
@@ -160,6 +160,8 @@ class TaskButton extends PanelMenu.Button {
 const TaskBar = GObject.registerClass(
 class TaskBar extends GObject.Object {
     _init() {
+        super._init();
+
         this._makeTaskbar();
         this._connectSignals();
     }
