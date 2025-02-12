@@ -1,7 +1,7 @@
 {
   "description": "Lag-free taskbar that respects the GNOME Shell style.\n\n Very light and reliable extension.\n\n Windows on active workspace.\n Scroll on panel to change active workspace.\n Hover task to raise its window.\n Right click to show app menu.\n Middle click to open new app window.\n\n Move date menu to the right.\n\n No settings.",
   "name": "Task Up UltraLite",
-  "shell-version": ["46", "47"],
+  "shell-version": ["46", "47", "48"],
   "url": "https://github.com/fthx/task-up-ultralite",
   "uuid": "task-up-ultralite@fthx",
   "version": 999

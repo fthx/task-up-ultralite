@@ -1,6 +1,6 @@
 //    Task Up UltraLite
 //    GNOME Shell extension
-//    @fthx 2024
+//    @fthx 2025
 
 
 import Clutter from 'gi://Clutter';
@@ -208,15 +208,14 @@ class TaskBar extends GObject.Object {
     }
 
     _moveDate(active) {
-        if (Main.sessionMode.isLocked)
-            return;
+        let panel = Main.sessionMode.panel;
 
         if (active) {
-            Main.sessionMode.panel.center = Main.sessionMode.panel.center.filter(item => item != 'dateMenu')
-            Main.sessionMode.panel.right.splice(-1, 0, 'dateMenu');
+            panel.center = panel.center.filter(item => item != 'dateMenu')
+            panel.right.splice(-1, 0, 'dateMenu');
         } else {
-            Main.sessionMode.panel.right = Main.sessionMode.panel.right.filter(item => item != 'dateMenu')
-            Main.sessionMode.panel.center.push('dateMenu');
+            panel.right = panel.right.filter(item => item != 'dateMenu')
+            panel.center.push('dateMenu');
         }
 
         Main.panel._updatePanel();
