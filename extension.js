@@ -41,10 +41,6 @@ class TaskButton extends PanelMenu.Button {
 
     _connectSignals() {
         global.workspace_manager.connectObject('active-workspace-changed', this._updateVisibility.bind(this), this);
-        Main.overview.connectObject(
-            'showing', () => this.hide(),
-            'hidden', this._updateVisibility.bind(this),
-            this);
 
         this._window.connectObject(
             'notify::appears-focused', this._updateFocus.bind(this),
@@ -64,7 +60,6 @@ class TaskButton extends PanelMenu.Button {
 
     _disconnectSignals() {
         global.workspace_manager.disconnectObject(this);
-        Main.overview.disconnectObject(this);
 
         this._window?.disconnectObject(this);
     }
@@ -149,7 +144,7 @@ class TaskButton extends PanelMenu.Button {
         let activeWorkspace = global.workspace_manager.get_active_workspace();
         let windowIsOnActiveWorkspace = this._window?.located_on_workspace(activeWorkspace);
 
-        this.visible = !Main.overview.visible && !this._window?.is_skip_taskbar() && windowIsOnActiveWorkspace;
+        this.visible = !this._window?.is_skip_taskbar() && windowIsOnActiveWorkspace;
     }
 
     _destroy() {
@@ -193,7 +188,7 @@ class TaskBar extends GObject.Object {
     _makeTaskbar() {
         this._moveDate(true);
 
-        this._makeTaskbarTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+        this._makeTaskbarTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
             let workspacesNumber = global.workspace_manager.n_workspaces;
 
             for (let workspaceIndex = 0; workspaceIndex < workspacesNumber; workspaceIndex++) {
