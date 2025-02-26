@@ -1,8 +1,12 @@
-.window-button > StWidget {
-  spacing: 6px;
-  padding-left: 6px;
-  padding-right: 6px;
+.window-button {
+  background-color: rgba(255, 255, 255, 0.125);
+}
 
-  -st-natural-width: 360px;
+.window-box {
+  -st-natural-width: 9999px;
   max-width: 360px;
+
+  spacing: 6px;
+  padding-left: 4px;
+  padding-right: 4px;
 }

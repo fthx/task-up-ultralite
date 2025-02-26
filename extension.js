@@ -71,6 +71,7 @@ class TaskButton extends PanelMenu.Button {
 
     _makeButtonBox() {
         this._box = new St.BoxLayout();
+        this._box.add_style_class_name('window-box');
 
         this._icon = new St.Icon();
         this._icon.set_icon_size(Main.panel.height / 2);
@@ -211,11 +212,11 @@ class TaskBar extends GObject.Object {
         let panel = Main.sessionMode.panel;
 
         if (active) {
-            panel.center = panel.center.filter(item => item != 'dateMenu')
-            panel.right.splice(-1, 0, 'dateMenu');
+            panel.center = panel.center.filter(item => item !== 'dateMenu');
+            panel.right.unshift('dateMenu');
         } else {
-            panel.right = panel.right.filter(item => item != 'dateMenu')
-            panel.center.push('dateMenu');
+            panel.right = panel.right.filter(item => item !== 'dateMenu');
+            panel.center.unshift('dateMenu');
         }
 
         Main.panel._updatePanel();
