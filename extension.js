@@ -15,6 +15,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 
+const ICON_SIZE = 16; // px
 const UNFOCUSED_OPACITY = 128; // 0...255
 
 const TaskButton = GObject.registerClass(
@@ -69,7 +70,6 @@ class TaskButton extends PanelMenu.Button {
         this._box.add_style_class_name('window-box');
 
         this._icon = new St.Icon();
-        this._icon.set_icon_size(Main.panel.height / 2);
         this._icon.set_fallback_gicon(null);
         this._box.add_child(this._icon);
 
@@ -136,6 +136,8 @@ class TaskButton extends PanelMenu.Button {
 
         if (this._app) {
             this._icon.set_gicon(this._app.get_icon());
+            this._icon.set_icon_size(ICON_SIZE);
+
             this.menu.setApp(this._app);
         }
     }
@@ -199,6 +201,7 @@ class TaskBar extends GObject.Object {
                     this._makeTaskButton(window);
             }
 
+            this._makeTaskbarTimeout = null;
             return GLib.SOURCE_REMOVE;
         });
     }
@@ -207,10 +210,11 @@ class TaskBar extends GObject.Object {
         let panel = Main.sessionMode.panel;
 
         if (active) {
-            panel.center = panel.center.filter(item => item !== 'dateMenu');
-            panel.right.unshift('dateMenu');
+            panel.center = panel.center.filter(item => item != 'dateMenu');
+            if (!panel.right.includes('dateMenu'))
+                panel.right.unshift('dateMenu');
         } else {
-            panel.right = panel.right.filter(item => item !== 'dateMenu');
+            panel.right = panel.right.filter(item => item != 'dateMenu');
             panel.center.unshift('dateMenu');
         }
 
