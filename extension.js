@@ -111,8 +111,7 @@ class TaskButton extends PanelMenu.Button {
         if (event.get_button() == Clutter.BUTTON_MIDDLE) {
             this.menu.close();
 
-            if (this._app?.can_open_new_window())
-                this._app?.open_new_window(-1);
+            this._window?.delete(global.get_current_time());
             Main.overview.hide();
 
             return Clutter.EVENT_STOP;
