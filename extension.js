@@ -18,6 +18,108 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 const ICON_SIZE = 16; // px
 const UNFOCUSED_OPACITY = 128; // 0...255
 
+const WorkspacesBar = GObject.registerClass(
+    class WorkspacesBar extends PanelMenu.Button {
+        _init() {
+            super._init();
+            this.reactive = false;
+
+            this._box = new St.BoxLayout();
+            this.add_child(this._box);
+
+            this.connectObject('destroy', this._destroy.bind(this), this);
+
+            this._id = 'workspaces-bar-button-' + this;
+            if (!Main.panel.statusArea[this._id])
+                Main.panel.addToStatusArea(this._id, this, 0, 'left');
+        }
+
+        _destroy() {
+            this._box.destroy_all_children();
+            this.destroy();
+        }
+    });
+
+const WorkspaceButton = GObject.registerClass(
+    class WorkspaceButton extends St.Bin {
+        _init(workspace) {
+            super._init({ reactive: true });
+
+            this._workspace = workspace;
+
+            this._makeButtonBox();
+
+            this._updateIndex();
+            this._updateFocus();
+
+            this._connectSignals();
+        }
+
+        _connectSignals() {
+            global.workspace_manager.connectObject(
+                'active-workspace-changed', this._updateFocus.bind(this),
+                'workspace-removed', this._onWorkspaceRemoved.bind(this),
+                this);
+
+            this.connectObject(
+                'button-press-event', (widget, event) => this._onClick(event),
+                'destroy', this._destroy.bind(this),
+                this);
+        }
+
+        _disconnectSignals() {
+            global.workspace_manager.disconnectObject(this);
+            this._workspace?.disconnectObject(this);
+        }
+
+        _makeButtonBox() {
+            this._workspaceIndex = new St.Label({ reactive: true, track_hover: true, y_align: Clutter.ActorAlign.CENTER });
+            this._workspaceIndex.add_style_class_name('taskup-workspace-button');
+
+            this.add_child(this._workspaceIndex);
+        }
+
+        _onClick(event) {
+            if (event.get_button() == Clutter.BUTTON_PRIMARY) {
+                if (global.workspace_manager.get_active_workspace() == this._workspace)
+                    Main.overview.toggle();
+                else
+                    this._workspace?.activate(global.get_current_time());
+
+                return Clutter.EVENT_STOP;
+            }
+
+            return Clutter.EVENT_PROPAGATE;
+        }
+
+        _updateFocus() {
+            if (this._workspace?.active) {
+                this._workspaceIndex.remove_style_class_name('taskup-workspace-button-inactive');
+                this._workspaceIndex.add_style_class_name('taskup-workspace-button-active');
+            } else {
+                this._workspaceIndex.remove_style_class_name('taskup-workspace-button-active');
+                this._workspaceIndex.add_style_class_name('taskup-workspace-button-inactive');
+            }
+        }
+
+        _updateIndex() {
+            this._workspaceIndex.set_text(String(this._workspace?.index() + 1));
+        }
+
+        _onWorkspaceRemoved() {
+            if (!this._workspace || this._workspace?.index() == -1)
+                this._destroy();
+            else
+                this._updateIndex();
+        }
+
+        _destroy() {
+            this._disconnectSignals();
+            this.get_parent()?.remove_child(this);
+            this.destroy();
+        }
+    });
+
 const TaskButton = GObject.registerClass(
     class TaskButton extends PanelMenu.Button {
         _init(window) {
@@ -33,7 +135,6 @@ const TaskButton = GObject.registerClass(
             this._updateVisibility();
 
             this._id = 'task-button-' + this._window;
-
             if (!Main.panel.statusArea[this._id])
                 Main.panel.addToStatusArea(this._id, this, this._getIndex(), 'left');
 
@@ -222,6 +323,19 @@ const TaskBar = GObject.registerClass(
             this._connectSignals();
         }
 
+        _makeWorkspaceButton(index) {
+            let workspace = global.workspace_manager.get_workspace_by_index(index);
+            if (!workspace)
+                return;
+
+            for (let bin of this._workspaceBar._box.get_children()) {
+                if (workspace == bin?._workspace)
+                    return;
+            }
+
+            this._workspaceBar?._box?.add_child(new WorkspaceButton(workspace));
+        }
+
         _makeTaskButton(window) {
             if (!window || window.is_skip_taskbar() || window.get_window_type() == Meta.WindowType.MODAL_DIALOG)
                 return;
@@ -243,17 +357,27 @@ const TaskBar = GObject.registerClass(
                     button = null;
                 }
             }
+
+            this._workspaceBar._destroy();
+
+            Main.panel.statusArea.activities.show();
+            this._moveDate(false);
         }
 
         _makeTaskbar() {
+            Main.panel.statusArea.activities.hide();
             this._moveDate(true);
 
             this._makeTaskbarTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                this._workspaceBar = new WorkspacesBar();
+
                 let workspacesNumber = global.workspace_manager.n_workspaces;
 
                 for (let workspaceIndex = 0; workspaceIndex < workspacesNumber; workspaceIndex++) {
                     let workspace = global.workspace_manager.get_workspace_by_index(workspaceIndex);
-                    let windowsList = workspace.list_windows();
+                    let windowsList = workspace?.list_windows();
+
+                    this._makeWorkspaceButton(workspaceIndex);
 
                     for (let window of windowsList)
                         this._makeTaskButton(window);
@@ -281,6 +405,8 @@ const TaskBar = GObject.registerClass(
 
         _connectSignals() {
             global.display.connectObject('window-created', (display, window) => this._makeTaskButton(window), this);
+            global.workspace_manager.connectObject('workspace-added', (wm, index) => this._makeWorkspaceButton(index), this);
+
             Main.panel.connectObject('scroll-event', (actor, event) => Main.wm.handleWorkspaceScroll(event), this);
         }
 
@@ -292,8 +418,6 @@ const TaskBar = GObject.registerClass(
         _destroy() {
             this._disconnectSignals();
             this._destroyTaskbar();
-
-            this._moveDate(false);
         }
     });
 

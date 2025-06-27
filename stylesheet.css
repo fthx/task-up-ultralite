@@ -14,7 +14,7 @@
 }
 
 .taskup-workspace {
-  font-size: 80%;
+  font-size: 75%;
 
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 4px;
@@ -27,4 +27,32 @@
 
 .taskup-demands-attention {
   color: rgba(233, 84, 32, 1);
+}
+
+.taskup-workspace-button {
+  border-radius: 4px;
+
+  padding-left: 8px;
+  padding-right: 8px;
+
+  margin-left: 3px;
+  margin-right: 3px;
+
+  transition-duration: 150ms;
+}
+
+.taskup-workspace-button:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.taskup-workspace-button-active {
+  border: 1px solid rgba(255, 255, 255, 1);
+
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.taskup-workspace-button-inactive {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+
+  background-color: rgba(255, 255, 255, 0.1);
 }
