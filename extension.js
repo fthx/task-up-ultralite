@@ -320,7 +320,6 @@ const TaskBar = GObject.registerClass(
             super._init();
 
             this._makeTaskbar();
-            this._connectSignals();
         }
 
         _makeWorkspaceButton(index) {
@@ -382,6 +381,8 @@ const TaskBar = GObject.registerClass(
                     for (let window of windowsList)
                         this._makeTaskButton(window);
                 }
+
+                this._connectSignals();
 
                 this._makeTaskbarTimeout = null;
                 return GLib.SOURCE_REMOVE;
