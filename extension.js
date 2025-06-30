@@ -58,7 +58,7 @@ const WorkspaceButton = GObject.registerClass(
         _connectSignals() {
             global.workspace_manager.connectObject(
                 'active-workspace-changed', this._updateFocus.bind(this),
-                'workspace-removed', this._onWorkspaceRemoved.bind(this),
+                'notify::n-workspaces', this._onWorkspaceRemoved.bind(this),
                 this);
 
             this.connectObject(
