@@ -87,7 +87,7 @@ const WorkspaceButton = GObject.registerClass(
                 if (global.workspace_manager.get_active_workspace() == this._workspace)
                     Main.overview.toggle();
                 else {
-                    if (this._workspace && this._workspace.index() != -1)
+                    if (this._workspace && this._workspaceReallyExists())
                         this._workspace.activate(global.get_current_time());
                 }
 
