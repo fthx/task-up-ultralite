@@ -324,7 +324,7 @@ const TaskBar = GObject.registerClass(
 
         _makeWorkspaceButton(index) {
             let workspace = global.workspace_manager.get_workspace_by_index(index);
-            if (!workspace)
+            if (!workspace || !this._workspaceBar || !this._workspaceBar._box)
                 return;
 
             for (let bin of this._workspaceBar._box.get_children()) {
