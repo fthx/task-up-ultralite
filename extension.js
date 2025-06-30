@@ -58,8 +58,11 @@ const WorkspaceButton = GObject.registerClass(
         _connectSignals() {
             global.workspace_manager.connectObject(
                 'active-workspace-changed', this._updateFocus.bind(this),
+                'workspace-removed', this._onWorkspaceRemoved.bind(this),
                 'notify::n-workspaces', this._onWorkspaceRemoved.bind(this),
                 this);
+
+            this._workspace?.connectObject('notify::workspace-index', this._updateIndex.bind(this), this);
 
             this.connectObject(
                 'button-press-event', (widget, event) => this._onClick(event),
@@ -83,8 +86,10 @@ const WorkspaceButton = GObject.registerClass(
             if (event.get_button() == Clutter.BUTTON_PRIMARY) {
                 if (global.workspace_manager.get_active_workspace() == this._workspace)
                     Main.overview.toggle();
-                else
-                    this._workspace?.activate(global.get_current_time());
+                else {
+                    if (this._workspace && this._workspace.index() != -1)
+                        this._workspace.activate(global.get_current_time());
+                }
 
                 return Clutter.EVENT_STOP;
             }
@@ -103,14 +108,25 @@ const WorkspaceButton = GObject.registerClass(
         }
 
         _updateIndex() {
-            this._workspaceIndex.set_text(String(this._workspace?.index() + 1));
+            if (this._workspace && this._workspaceReallyExists())
+                this._workspaceIndex.set_text(String(this._workspace.index() + 1));
+        }
+
+        _workspaceReallyExists() {
+            let n_workspaces = global.workspace_manager.n_workspaces;
+
+            for (let index = 0; index < n_workspaces; index++) {
+                if (global.workspace_manager.get_workspace_by_index(index) == this._workspace) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         _onWorkspaceRemoved() {
-            if (!this._workspace || this._workspace?.index() == -1)
+            if (!this._workspace || !this._workspaceReallyExists())
                 this._destroy();
-            else
-                this._updateIndex();
         }
 
         _destroy() {
