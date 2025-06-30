@@ -413,6 +413,8 @@ const TaskBar = GObject.registerClass(
 
         _disconnectSignals() {
             global.display.disconnectObject(this);
+            global.workspace_manager.disconnectObject(this);
+
             Main.panel.disconnectObject(this);
         }
 
