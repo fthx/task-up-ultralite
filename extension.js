@@ -87,7 +87,7 @@ const WorkspaceButton = GObject.registerClass(
                 if (global.workspace_manager.get_active_workspace() == this._workspace)
                     Main.overview.toggle();
                 else {
-                    if (this._workspace && this._workspaceReallyExists())
+                    if (this._workspace && this._isWorkspaceMapped())
                         this._workspace.activate(global.get_current_time());
                 }
 
@@ -108,24 +108,23 @@ const WorkspaceButton = GObject.registerClass(
         }
 
         _updateIndex() {
-            if (this._workspace && this._workspaceReallyExists())
+            if (this._workspace && this._isWorkspaceMapped())
                 this._workspaceIndex.set_text(String(this._workspace.index() + 1));
         }
 
-        _workspaceReallyExists() {
+        _isWorkspaceMapped() {
             let n_workspaces = global.workspace_manager.n_workspaces;
 
             for (let index = 0; index < n_workspaces; index++) {
-                if (global.workspace_manager.get_workspace_by_index(index) == this._workspace) {
+                if (global.workspace_manager.get_workspace_by_index(index) == this._workspace)
                     return true;
-                }
             }
 
             return false;
         }
 
         _onWorkspaceRemoved() {
-            if (!this._workspace || !this._workspaceReallyExists())
+            if (!this._workspace || !this._isWorkspaceMapped())
                 this._destroy();
         }
 

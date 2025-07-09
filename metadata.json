@@ -1,5 +1,5 @@
 {
-  "description": "Lag-free taskbar that respects the GNOME Shell style.\n\n Very light and reliable extension.\n\n Workspaces buttons.\n\n Windows on active workspace.\n Highlight window demanding attention.\n Scroll on panel to change active workspace.\n Hover task to raise its window.\n Right click to show app menu.\n Middle click to open new app window.\n\n Move date menu to the right.\n Show tasks in all workspaces in overview.\n\n No settings.\n\n If you want normal-weigthed fonts in panel, have a look at https://extensions.gnome.org/extension/8273/yaru-like-panel/ .",
+  "description": "Lag-free taskbar that respects the GNOME Shell style.\n\n Very light and reliable extension.\n\n Workspaces buttons.\n Windows on active workspace.\n Highlight window demanding attention.\n Scroll on panel to change active workspace.\n Hover task to raise its window.\n Right click to show app menu.\n Middle click to open new app window.\n\n Move date menu to the right.\n Show tasks in all workspaces in overview.\n\n No settings.\n\n If you want normal-weigthed fonts in panel, have a look at https://extensions.gnome.org/extension/8273/yaru-like-panel/ .",
   "name": "Task Up UltraLite",
   "shell-version": [
     "46",
