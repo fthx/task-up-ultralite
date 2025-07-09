@@ -29,7 +29,7 @@ const WorkspacesBar = GObject.registerClass(
 
             this.connectObject('destroy', this._destroy.bind(this), this);
 
-            this._id = 'workspaces-bar-button-' + this;
+            this._id = 'workspaces-bar-button';
             if (!Main.panel.statusArea[this._id])
                 Main.panel.addToStatusArea(this._id, this, 0, 'left');
         }
