@@ -243,12 +243,12 @@ const TaskButton = GObject.registerClass(
                 return;
 
             if (this.get_hover()) {
-                let window_monitor_index = this._window.get_monitor();
+                let monitor_index = this._window?.get_monitor();
                 let monitor_windows = this._window?.get_workspace()
                     .list_windows()
-                    .filter(w => !w.minimized && w.get_monitor() == window_monitor_index);
-                let all_windows_stacked = global.display.sort_windows_by_stacking(monitor_windows);
-                this._window_on_top = all_windows_stacked[all_windows_stacked.length - 1];
+                    .filter(w => !w.minimized && w.get_monitor() == monitor_index);
+                let monitor_windows_sorted = global.display.sort_windows_by_stacking(monitor_windows);
+                this._window_on_top = monitor_windows_sorted.at(-1);
 
                 this._window?.raise();
             }
@@ -291,9 +291,9 @@ const TaskButton = GObject.registerClass(
 
         _updateFocus() {
             if (Main.overview.visible || this._window?.appears_focused)
-                this._box.set_opacity(255);
+                this.set_opacity(255);
             else
-                this._box.set_opacity(UNFOCUSED_OPACITY);
+                this.set_opacity(UNFOCUSED_OPACITY);
         }
 
         _updateDemandsAttention() {

@@ -1,5 +1,10 @@
 .taskup-button {
-  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+
+  margin-top: 1px;
+  margin-bottom: 1px;
+
+  background-color: rgba(0, 0, 0, 0.2);
 
   transition-duration: 150ms;
 }
@@ -16,7 +21,7 @@
 .taskup-workspace {
   font-size: 75%;
 
-  border: 1px solid rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.4);
   border-radius: 4px;
 
   padding-left: 4px;
@@ -46,13 +51,13 @@
 }
 
 .taskup-workspace-button-active {
-  border: 1px solid rgba(0, 0, 0, 1);
+  border: 1px solid rgba(0, 0, 0, 0.4);
 
   background-color: rgba(0, 0, 0, 0.3);
 }
 
 .taskup-workspace-button-inactive {
-  border: 1px solid rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 
   background-color: rgba(0, 0, 0, 0.1);
 }
