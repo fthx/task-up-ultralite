@@ -27,16 +27,15 @@ const WorkspacesBar = GObject.registerClass(
             this._box = new St.BoxLayout();
             this.add_child(this._box);
 
-            this.connectObject('destroy', this._destroy.bind(this), this);
-
             this._id = 'workspaces-bar-button';
             if (!Main.panel.statusArea[this._id])
                 Main.panel.addToStatusArea(this._id, this, 0, 'left');
         }
 
-        _destroy() {
+        destroy() {
             this._box.destroy_all_children();
-            this.destroy();
+
+            super.destroy();
         }
     });
 
@@ -64,10 +63,7 @@ const WorkspaceButton = GObject.registerClass(
 
             this._workspace?.connectObject('notify::workspace-index', this._updateIndex.bind(this), this);
 
-            this.connectObject(
-                'button-press-event', (widget, event) => this._onClick(event),
-                'destroy', this._destroy.bind(this),
-                this);
+            this.connectObject('button-press-event', (widget, event) => this._onClick(event), this);
         }
 
         _disconnectSignals() {
@@ -125,13 +121,14 @@ const WorkspaceButton = GObject.registerClass(
 
         _onWorkspaceRemoved() {
             if (!this._workspace || !this._isWorkspaceMapped())
-                this._destroy();
+                this.destroy();
         }
 
-        _destroy() {
+        destroy() {
             this._disconnectSignals();
             this.get_parent()?.remove_child(this);
-            this.destroy();
+
+            super.destroy();
         }
     });
 
@@ -172,7 +169,7 @@ const TaskButton = GObject.registerClass(
                 'notify::title', this._updateTitle.bind(this),
                 'notify::urgent', () => this._updateDemandsAttention(),
                 'notify::wm-class', this._updateApp.bind(this), GObject.ConnectFlags.AFTER,
-                'unmanaging', this._destroy.bind(this),
+                'unmanaging', this.destroy.bind(this),
                 'workspace-changed', this._updatePosition.bind(this),
                 this);
 
@@ -332,9 +329,10 @@ const TaskButton = GObject.registerClass(
             this.visible = Main.overview.visible || (!this._window?.is_skip_taskbar() && this._windowIsOnActiveWorkspace);
         }
 
-        _destroy() {
+        destroy() {
             this._disconnectSignals();
-            this.destroy();
+
+            super.destroy();
         }
     });
 
@@ -376,12 +374,12 @@ const TaskBar = GObject.registerClass(
                 let button = bin.child;
 
                 if (button && button instanceof TaskButton) {
-                    button._destroy();
+                    button.destroy();
                     button = null;
                 }
             }
 
-            this._workspaceBar._destroy();
+            this._workspaceBar.destroy();
 
             Main.panel.statusArea.activities.show();
             this._moveDate(false);
@@ -442,7 +440,7 @@ const TaskBar = GObject.registerClass(
             Main.panel.disconnectObject(this);
         }
 
-        _destroy() {
+        destroy() {
             this._disconnectSignals();
             this._destroyTaskbar();
         }
@@ -454,7 +452,7 @@ export default class TaskUpUltraLiteExtension {
     }
 
     disable() {
-        this._taskbar._destroy();
+        this._taskbar.destroy();
         this._taskbar = null;
     }
 }
