@@ -56,13 +56,11 @@ const WorkspaceButton = GObject.registerClass(
 
         _connectSignals() {
             global.workspace_manager.connectObject(
-                'active-workspace-changed', this._updateFocus.bind(this),
-                'workspace-removed', this._onWorkspaceRemoved.bind(this),
-                'notify::n-workspaces', this._onWorkspaceRemoved.bind(this),
+                'active-workspace-changed', () => this._updateFocus(),
+                'workspace-removed', () => this._onWorkspaceRemoved(),
+                'notify::n-workspaces', () => this._onWorkspaceRemoved(),
                 this);
-
-            this._workspace?.connectObject('notify::workspace-index', this._updateIndex.bind(this), this);
-
+            this._workspace?.connectObject('notify::workspace-index', () => this._updateIndex(), this);
             this.connectObject('button-press-event', (widget, event) => this._onClick(event), this);
         }
 
@@ -79,40 +77,36 @@ const WorkspaceButton = GObject.registerClass(
         }
 
         _onClick(event) {
-            if (event.get_button() == Clutter.BUTTON_PRIMARY) {
-                if (global.workspace_manager.get_active_workspace() == this._workspace)
-                    Main.overview.toggle();
-                else {
-                    if (this._workspace && this._isWorkspaceMapped())
-                        this._workspace.activate(global.get_current_time());
-                }
-
-                return Clutter.EVENT_STOP;
+            if (global.workspace_manager.get_active_workspace() === this._workspace)
+                Main.overview.toggle();
+            else {
+                if (this._workspace && this._isWorkspaceMapped())
+                    this._workspace.activate(global.get_current_time());
             }
 
-            return Clutter.EVENT_PROPAGATE;
+            return Clutter.EVENT_STOP;
         }
 
         _updateFocus() {
             if (this._workspace?.active) {
-                this._workspaceIndex.remove_style_class_name('taskup-workspace-button-inactive');
-                this._workspaceIndex.add_style_class_name('taskup-workspace-button-active');
+                this._workspaceIndex?.remove_style_class_name('taskup-workspace-button-inactive');
+                this._workspaceIndex?.add_style_class_name('taskup-workspace-button-active');
             } else {
-                this._workspaceIndex.remove_style_class_name('taskup-workspace-button-active');
-                this._workspaceIndex.add_style_class_name('taskup-workspace-button-inactive');
+                this._workspaceIndex?.remove_style_class_name('taskup-workspace-button-active');
+                this._workspaceIndex?.add_style_class_name('taskup-workspace-button-inactive');
             }
         }
 
         _updateIndex() {
             if (this._workspace && this._isWorkspaceMapped())
-                this._workspaceIndex.set_text(String(this._workspace.index() + 1));
+                this._workspaceIndex.text = String(this._workspace.index() + 1);
         }
 
         _isWorkspaceMapped() {
-            let n_workspaces = global.workspace_manager.n_workspaces;
+            const n_workspaces = global.workspace_manager.n_workspaces;
 
             for (let index = 0; index < n_workspaces; index++) {
-                if (global.workspace_manager.get_workspace_by_index(index) == this._workspace)
+                if (global.workspace_manager.get_workspace_by_index(index) === this._workspace)
                     return true;
             }
 
@@ -146,7 +140,7 @@ const TaskButton = GObject.registerClass(
             this._updateTitle();
             this._updateVisibility();
 
-            this._id = 'task-button-' + this._window;
+            this._id = `task-button-${this._window.get_id()}`;
             if (!Main.panel.statusArea[this._id])
                 Main.panel.addToStatusArea(this._id, this, this._getIndex(), 'left');
 
@@ -154,27 +148,27 @@ const TaskButton = GObject.registerClass(
         }
 
         _connectSignals() {
-            global.workspace_manager.connectObject('active-workspace-changed', this._updateVisibility.bind(this), this);
+            global.workspace_manager.connectObject('active-workspace-changed', () => this._updateVisibility(), this);
 
             Main.overview.connectObject(
-                'shown', this._updateVisibility.bind(this),
-                'hidden', this._updateVisibility.bind(this),
+                'shown', () => this._updateVisibility(),
+                'hidden', () => this._updateVisibility(),
                 this);
 
             this._window?.connectObject(
-                'notify::appears-focused', this._updateFocus.bind(this),
-                'notify::demands-attention', this._updateDemandsAttention.bind(this),
-                'notify::gtk-application-id', this._updateApp.bind(this), GObject.ConnectFlags.AFTER,
-                'notify::skip-taskbar', this._updateVisibility.bind(this),
-                'notify::title', this._updateTitle.bind(this),
-                'notify::urgent', () => this._updateDemandsAttention(),
-                'notify::wm-class', this._updateApp.bind(this), GObject.ConnectFlags.AFTER,
-                'unmanaging', this.destroy.bind(this),
-                'workspace-changed', this._updatePosition.bind(this),
+                'notify::appears-focused', () => this._updateFocus(), GObject.ConnectFlags.AFTER,
+                'notify::demands-attention', () => this._updateDemandsAttention(), GObject.ConnectFlags.AFTER,
+                'notify::gtk-application-id', () => this._updateApp(), GObject.ConnectFlags.AFTER,
+                'notify::skip-taskbar', () => this._updateVisibility(), GObject.ConnectFlags.AFTER,
+                'notify::title', () => this._updateTitle(), GObject.ConnectFlags.AFTER,
+                'notify::urgent', () => this._updateDemandsAttention(), GObject.ConnectFlags.AFTER,
+                'notify::wm-class', () => this._updateApp(), GObject.ConnectFlags.AFTER,
+                'unmanaging', () => this.destroy(), GObject.ConnectFlags.AFTER,
+                'workspace-changed', () => this._updatePosition(), GObject.ConnectFlags.AFTER,
                 this);
 
             this.connectObject(
-                'notify::hover', this._onHover.bind(this),
+                'notify::hover', () => this._onHover(),
                 'button-press-event', (widget, event) => this._onClick(event),
                 this);
         }
@@ -193,8 +187,7 @@ const TaskButton = GObject.registerClass(
             this._workspaceIndex.add_style_class_name('taskup-workspace');
             this._box.add_child(this._workspaceIndex);
 
-            this._icon = new St.Icon();
-            this._icon.set_fallback_gicon(null);
+            this._icon = new St.Icon({ fallback_gicon: null });
             this._box.add_child(this._icon);
 
             this._title = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
@@ -205,25 +198,32 @@ const TaskButton = GObject.registerClass(
             this.setMenu(new AppMenu(this));
         }
 
-        _onClick(event) {
-            if (event.get_button() == Clutter.BUTTON_PRIMARY) {
-                this.menu.close();
-                this._window_on_top = null;
+        _toggleWindow() {
+            this._windowOnTop = null;
 
-                if (this._window?.has_focus()) {
-                    if (this._window?.can_minimize() && !Main.overview.visible)
-                        this._window?.minimize();
-                } else {
-                    this._window?.activate(global.get_current_time());
-                    this._window?.focus(global.get_current_time());
-                }
-                Main.overview.hide();
+            if (this._window?.has_focus()) {
+                if (this._window?.can_minimize() && !Main.overview.visible)
+                    this._window?.minimize();
+            } else {
+                this._window?.activate(global.get_current_time());
+                this._window?.focus(global.get_current_time());
+            }
+            Main.overview.hide();
+        }
+
+        _onClick(event) {
+            const button = event?.get_button();
+
+            if (button === Clutter.BUTTON_PRIMARY) {
+                this.menu?.close();
+
+                this._toggleWindow();
 
                 return Clutter.EVENT_STOP;
             }
 
-            if (event.get_button() == Clutter.BUTTON_MIDDLE) {
-                this.menu.close();
+            if (button === Clutter.BUTTON_MIDDLE) {
+                this.menu?.close();
 
                 if (this._app?.can_open_new_window())
                     this._app?.open_new_window(-1);
@@ -240,27 +240,26 @@ const TaskButton = GObject.registerClass(
                 return;
 
             if (this.get_hover()) {
-                let monitor_index = this._window?.get_monitor();
-                let monitor_windows = this._window?.get_workspace()
+                const monitorIndex = this._window?.get_monitor();
+                const monitorWindows = this._window?.get_workspace()
                     .list_windows()
-                    .filter(w => !w.minimized && w.get_monitor() == monitor_index);
-                let monitor_windows_sorted = global.display.sort_windows_by_stacking(monitor_windows);
-                this._window_on_top = monitor_windows_sorted.at(-1);
+                    .filter(w => !w.minimized && w.get_monitor() === monitorIndex);
+                this._windowOnTop = global.display.sort_windows_by_stacking(monitorWindows)?.at(-1);
 
                 this._window?.raise();
             }
             else
-                this._window_on_top?.raise();
+                this._windowOnTop?.raise();
         }
 
         _getIndex() {
             let index = 0;
 
             for (let bin of Main.panel._leftBox.get_children()) {
-                let button = bin.child;
+                const button = bin.child;
 
                 if (button) {
-                    let thisButtonIsAfter = button._window?.get_workspace().index() <= this._window?.get_workspace().index();
+                    const thisButtonIsAfter = button._window?.get_workspace().index() <= this._window?.get_workspace().index();
 
                     if (!(button instanceof TaskButton) || thisButtonIsAfter)
                         index++;
@@ -278,25 +277,26 @@ const TaskButton = GObject.registerClass(
         }
 
         _updateWorkspace() {
-            let workspaceIndex = this._window?.get_workspace().index() + 1;
+            const workspaceIndex = this._window?.get_workspace().index() + 1;
+
             this._activeWorkspace = global.workspace_manager.get_active_workspace();
             this._windowIsOnActiveWorkspace = this._window?.located_on_workspace(this._activeWorkspace);
 
-            this._workspaceIndex.set_text(workspaceIndex?.toString());
+            this._workspaceIndex.text = workspaceIndex?.toString();
             this._workspaceIndex.visible = Main.overview.visible && !this._window?.on_all_workspaces;
         }
 
         _updateFocus() {
             if (Main.overview.visible || this._window?.appears_focused)
-                this.set_opacity(255);
+                this.opacity = 255;
             else
-                this.set_opacity(UNFOCUSED_OPACITY);
+                this.opacity = UNFOCUSED_OPACITY;
         }
 
         _updateDemandsAttention() {
             if (this._window?.demands_attention) {
                 this._title.add_style_class_name('taskup-demands-attention');
-                this._box.set_opacity(255);
+                this._box.opacity = 255;
 
                 this._workspaceIndex.visible = Main.overview.visible || !this._windowIsOnActiveWorkspace;
                 this.visible = true;
@@ -308,15 +308,16 @@ const TaskButton = GObject.registerClass(
         }
 
         _updateTitle() {
-            this._title.set_text(this._window?.title);
+            this._title.text = this._window?.title;
         }
 
         _updateApp() {
-            this._app = Shell.WindowTracker.get_default().get_window_app(this._window);
+            if (this._window)
+                this._app = Shell.WindowTracker.get_default().get_window_app(this._window);
 
             if (this._app) {
-                this._icon.set_gicon(this._app.get_icon());
-                this._icon.set_icon_size(ICON_SIZE);
+                this._icon.gicon = this._app.get_icon();
+                this._icon.icon_size = ICON_SIZE;
 
                 this.menu.setApp(this._app);
             }
@@ -345,12 +346,12 @@ const TaskBar = GObject.registerClass(
         }
 
         _makeWorkspaceButton(index) {
-            let workspace = global.workspace_manager.get_workspace_by_index(index);
+            const workspace = global.workspace_manager.get_workspace_by_index(index);
             if (!workspace || !this._workspaceBar || !this._workspaceBar._box)
                 return;
 
             for (let bin of this._workspaceBar._box.get_children()) {
-                if (workspace == bin?._workspace)
+                if (workspace === bin?._workspace)
                     return;
             }
 
@@ -358,7 +359,7 @@ const TaskBar = GObject.registerClass(
         }
 
         _makeTaskButton(window) {
-            if (!window || window.is_skip_taskbar() || window.get_window_type() == Meta.WindowType.MODAL_DIALOG)
+            if (!window || window.is_skip_taskbar() || window.get_window_type() === Meta.WindowType.MODAL_DIALOG)
                 return;
 
             new TaskButton(window);
@@ -371,12 +372,10 @@ const TaskBar = GObject.registerClass(
             }
 
             for (let bin of Main.panel._leftBox.get_children()) {
-                let button = bin.child;
+                const button = bin.child;
 
-                if (button && button instanceof TaskButton) {
+                if (button && button instanceof TaskButton)
                     button.destroy();
-                    button = null;
-                }
             }
 
             this._workspaceBar.destroy();
@@ -392,11 +391,11 @@ const TaskBar = GObject.registerClass(
             this._makeTaskbarTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
                 this._workspaceBar = new WorkspacesBar();
 
-                let workspacesNumber = global.workspace_manager.n_workspaces;
+                const workspacesNumber = global.workspace_manager.n_workspaces;
 
                 for (let workspaceIndex = 0; workspaceIndex < workspacesNumber; workspaceIndex++) {
-                    let workspace = global.workspace_manager.get_workspace_by_index(workspaceIndex);
-                    let windowsList = workspace?.list_windows();
+                    const workspace = global.workspace_manager.get_workspace_by_index(workspaceIndex);
+                    const windowsList = workspace?.list_windows() || [];
 
                     this._makeWorkspaceButton(workspaceIndex);
 
@@ -412,14 +411,14 @@ const TaskBar = GObject.registerClass(
         }
 
         _moveDate(active) {
-            let panel = Main.sessionMode.panel;
+            const panel = Main.sessionMode.panel;
 
             if (active) {
-                panel.center = panel.center.filter(item => item != 'dateMenu');
+                panel.center = panel.center.filter(item => item !== 'dateMenu');
                 if (!panel.right.includes('dateMenu'))
                     panel.right.unshift('dateMenu');
             } else {
-                panel.right = panel.right.filter(item => item != 'dateMenu');
+                panel.right = panel.right.filter(item => item !== 'dateMenu');
                 panel.center.unshift('dateMenu');
             }
 
@@ -452,7 +451,7 @@ export default class TaskUpUltraLiteExtension {
     }
 
     disable() {
-        this._taskbar.destroy();
+        this._taskbar?.destroy();
         this._taskbar = null;
     }
 }
