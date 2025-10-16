@@ -296,7 +296,7 @@ const TaskButton = GObject.registerClass(
         _updateDemandsAttention() {
             if (this._window?.demands_attention) {
                 this._title.add_style_class_name('taskup-demands-attention');
-                this._box.opacity = 255;
+                this.opacity = 255;
 
                 this._workspaceIndex.visible = Main.overview.visible || !this._windowIsOnActiveWorkspace;
                 this.visible = true;
