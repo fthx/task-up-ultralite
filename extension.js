@@ -79,10 +79,8 @@ const WorkspaceButton = GObject.registerClass(
         _onClick(event) {
             if (global.workspace_manager.get_active_workspace() === this._workspace)
                 Main.overview.toggle();
-            else {
-                if (this._workspace && this._isWorkspaceMapped())
-                    this._workspace.activate(global.get_current_time());
-            }
+            else if (this._workspace && this._isWorkspaceMapped())
+                this._workspace.activate(global.get_current_time());
 
             return Clutter.EVENT_STOP;
         }
@@ -241,9 +239,7 @@ const TaskButton = GObject.registerClass(
 
             if (this.get_hover()) {
                 const monitorIndex = this._window?.get_monitor();
-                const monitorWindows = this._window?.get_workspace()
-                    .list_windows()
-                    .filter(w => !w.minimized && w.get_monitor() === monitorIndex);
+                const monitorWindows = this._window?.get_workspace()?.list_windows().filter(w => !w.minimized && w.get_monitor() === monitorIndex);
                 this._windowOnTop = global.display.sort_windows_by_stacking(monitorWindows)?.at(-1);
 
                 this._window?.raise();
@@ -255,11 +251,11 @@ const TaskButton = GObject.registerClass(
         _getIndex() {
             let index = 0;
 
-            for (let bin of Main.panel._leftBox.get_children()) {
+            for (const bin of Main.panel._leftBox.get_children()) {
                 const button = bin.child;
 
                 if (button) {
-                    const thisButtonIsAfter = button._window?.get_workspace().index() <= this._window?.get_workspace().index();
+                    const thisButtonIsAfter = button._window?.get_workspace()?.index() <= this._window?.get_workspace()?.index();
 
                     if (!(button instanceof TaskButton) || thisButtonIsAfter)
                         index++;
@@ -282,7 +278,7 @@ const TaskButton = GObject.registerClass(
             this._activeWorkspace = global.workspace_manager.get_active_workspace();
             this._windowIsOnActiveWorkspace = this._window?.located_on_workspace(this._activeWorkspace);
 
-            this._workspaceIndex.text = workspaceIndex?.toString();
+            this._workspaceIndex.text = workspaceIndex?.toString() ?? ' ';
             this._workspaceIndex.visible = Main.overview.visible && !this._window?.on_all_workspaces;
         }
 
@@ -295,20 +291,20 @@ const TaskButton = GObject.registerClass(
 
         _updateDemandsAttention() {
             if (this._window?.demands_attention) {
-                this._title.add_style_class_name('taskup-demands-attention');
+                this._title?.add_style_class_name('taskup-demands-attention');
                 this.opacity = 255;
 
                 this._workspaceIndex.visible = Main.overview.visible || !this._windowIsOnActiveWorkspace;
                 this.visible = true;
             } else {
-                this._title.remove_style_class_name('taskup-demands-attention');
+                this._title?.remove_style_class_name('taskup-demands-attention');
 
                 this._updateVisibility();
             }
         }
 
         _updateTitle() {
-            this._title.text = this._window?.title;
+            this._title.text = this._window?.title ?? '';
         }
 
         _updateApp() {
@@ -350,12 +346,12 @@ const TaskBar = GObject.registerClass(
             if (!workspace || !this._workspaceBar || !this._workspaceBar._box)
                 return;
 
-            for (let bin of this._workspaceBar._box.get_children()) {
+            for (const bin of this._workspaceBar._box.get_children()) {
                 if (workspace === bin?._workspace)
                     return;
             }
 
-            this._workspaceBar?._box?.add_child(new WorkspaceButton(workspace));
+            this._workspaceBar._box.add_child(new WorkspaceButton(workspace));
         }
 
         _makeTaskButton(window) {
@@ -371,7 +367,7 @@ const TaskBar = GObject.registerClass(
                 this._makeTaskbarTimeout = null;
             }
 
-            for (let bin of Main.panel._leftBox.get_children()) {
+            for (const bin of Main.panel._leftBox.get_children()) {
                 const button = bin.child;
 
                 if (button && button instanceof TaskButton)
@@ -395,11 +391,11 @@ const TaskBar = GObject.registerClass(
 
                 for (let workspaceIndex = 0; workspaceIndex < workspacesNumber; workspaceIndex++) {
                     const workspace = global.workspace_manager.get_workspace_by_index(workspaceIndex);
-                    const windowsList = workspace?.list_windows() || [];
+                    const windowsList = workspace?.list_windows() ?? [];
 
                     this._makeWorkspaceButton(workspaceIndex);
 
-                    for (let window of windowsList)
+                    for (const window of windowsList)
                         this._makeTaskButton(window);
                 }
 
